@@ -30,14 +30,19 @@ if prompt := st.chat_input("اكتب رسالتك هنا يا سامي..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
 
     try:
-        # استدعاء نموذج جيميناي
-        model = genai.GenerativeModel("gemini-1.5-pro")
-        
-        # إضافة تخصيص للرد بالدارجة الجزائرية والإنجليزية
-        system_instruction = "You are SamiLab AI Agent. Answer in Algerian Darja mixed with English naturally."
-        
-        response = model.generate_content(prompt)
-        
+    # استدعاء نموذج جيميني مع تحديد نسخة الـ API المستقرة أوتوماتيكياً
+    model = genai.GenerativeModel(
+        model_name="gemini-1.5-flash"
+    )
+    
+    # إضافة تخصيص للرد بالدارجة الجزائرية والإنجليزية
+    system_instruction = "You are SamiLab AI Agent. Answer in Algerian Darja mixed with English naturally."
+    
+    # طلب توليد المحتوى مع إجبار السيرفر على استخدام الموديل الصحيح
+    response = model.generate_content(
+        prompt,
+        generation_config={"model": "models/gemini-1.5-flash"}
+    )
         # عرض رد الذكاء الاصطناعي
         with st.chat_message("assistant"):
             st.markdown(response.text)
