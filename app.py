@@ -6,11 +6,11 @@ st.set_page_config(page_title="SamiLab Agent", page_icon="🤖", layout="centere
 st.title("🤖 SamiLab AI Agent")
 st.write("مرحباً بك يا سامي! الشات السحابي الخفيف راهو شغال بنجاح.")
 
-# التحقق من وجود مفتاح الـ API في الإعدادات السرية
+# التحقق من وجود مفتاح الـ API في الإعدادات السرية للسحابة
 if "GEMINI_API_KEY" in st.secrets:
     genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 else:
-    st.error("خطأ: مفتاح الـ API (GEMINI_API_KEY) غير مبرمج في الإعدادات السرية للسحابة.")
+    st.error("خطأ: مفتاح الـ API غير مبرمج في الإعدادات السرية للسحابة (GEMINI_API_KEY).")
     st.stop()
 
 # تهيئة ذاكرة الشات
@@ -30,19 +30,14 @@ if prompt := st.chat_input("اكتب رسالتك هنا يا سامي..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
 
     try:
-    # استدعاء نموذج جيميني مع تحديد نسخة الـ API المستقرة أوتوماتيكياً
-    model = genai.GenerativeModel(
-        model_name="gemini-1.5-flash"
-    )
-    
-    # إضافة تخصيص للرد بالدارجة الجزائرية والإنجليزية
-    system_instruction = "You are SamiLab AI Agent. Answer in Algerian Darja mixed with English naturally."
-    
-    # طلب توليد المحتوى مع إجبار السيرفر على استخدام الموديل الصحيح
-    response = model.generate_content(
-        prompt,
-        generation_config={"model": "models/gemini-1.5-flash"}
-    )
+        # استدعاء آخر موديل مستقر ومعتمد لعام 2026 مباشرة
+        model = genai.GenerativeModel("gemini-2.5-flash")
+        
+        # طلب توليد المحتوى مع إرسال التوجيهات مباشرة لضمان اشتغاله
+        response = model.generate_content(
+            f"You are SamiLab AI Agent. Answer in Algerian Darja mixed with English naturally. User says: {prompt}"
+        )
+        
         # عرض رد الذكاء الاصطناعي
         with st.chat_message("assistant"):
             st.markdown(response.text)
