@@ -31,7 +31,7 @@ if prompt := st.chat_input("اكتب رسالتك هنا يا سامي..."):
 
     try:
         # استدعاء نموذج جيميناي
-        model = genai.GenerativeModel("models/gemini-1.5-flash")
+        model = genai.GenerativeModel("gemini-1.5-flash-latest")
         
         # إضافة تخصيص للرد بالدارجة الجزائرية والإنجليزية
         system_instruction = "You are SamiLab AI Agent. Answer in Algerian Darja mixed with English naturally."
