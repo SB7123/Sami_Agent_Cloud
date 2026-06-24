@@ -8,7 +8,7 @@ st.write("مرحباً بك يا سامي! الشات السحابي الخفي�
 
 # التحقق من وجود مفتاح الـ API في الإعدادات السرية للسحابة
 if "GEMINI_API_KEY" in st.secrets:
-    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+    genai.configure(api_key=st.secrets["GEMINI_API_KEY"], transport='rest')
 else:
     st.error("خطأ: مفتاح الـ API غير مبرمج في الإعدادات السرية للسحابة (GEMINI_API_KEY).")
     st.stop()
