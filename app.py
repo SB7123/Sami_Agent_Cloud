@@ -1,60 +1,54 @@
-import streamlit as st
-import requests
+import streamlit as str
+import os
+from groq import Groq
 
-st.set_page_config(page_title="SamiLab Agent", page_icon="🤖")
-st.title("🤖 SamiLab AI Agent")
+# إعداد واجهة المستخدم
+str.set_page_config(page_title="SamiLab AI Agent", page_icon="🤖")
+str.title("🤖 SamiLab AI Agent")
 
-api_key = st.secrets.get("GEMINI_API_KEY")
+# جلب مفتاح API من Secrets
+api_key = str.secrets.get("GROQ_API_KEY") or os.environ.get("GROQ_API_KEY")
 
-# تهيئة ذاكرة الشات
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+if not api_key:
+    str.error("خطأ: لم يتم العثور على مفتاح GROQ_API_KEY في الإعدادات!")
+else:
+    # تهيئة عميل Groq
+    client = Groq(api_key=api_key)
 
-# عرض الرسائل السابقة
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+    # تهيئة ذاكرة الشات
+    if "messages" not in str.session_state:
+        str.session_state.messages = []
 
-# استقبال الرسالة الجديدة
-if prompt := st.chat_input("اكتب رسالتك هنا يا سامي..."):
-    # عرض رسالة المستخدم
-    with st.chat_message("user"):
-        st.markdown(prompt)
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    
-    try:
-        # 1. جلب اسم الموديل الشغال أوتوماتيكيا من سيرفر قوقل بناءً على المفتاح تاعك
-        list_url = f"https://generativelanguage.googleapis.com/v1beta/models?key={api_key}"
-        list_res = requests.get(list_url).json()
-        
-        working_model = None
-        if "models" in list_res:
-            for m in list_res["models"]:
-                # نحوسو على أول موديل يدعم توليد النصوص ونهربو بيه
-                if "generateContent" in m.get("supportedGenerationMethods", []):
-                    working_model = m["name"]
-                    break 
-        
-        # إذا السيرفر قال بلي المفتاح ما عندو حتى موديل
-        if not working_model:
-            st.error("للأسف، السيرفر أكد بلي هاد المفتاح ما عندوش أي صلاحية. لازم تفتح حساب قوقل جديد وتجيب مفتاح AIzaSy.")
-            st.stop()
+    # عرض الرسائل السابقة
+    for msg in str.session_state.messages:
+        with str.chat_message(msg["role"]):
+            str.markdown(msg["content"])
 
-        # 2. إرسال الرسالة للموديل اللي تم اكتشافه بنجاح
-        url = f"https://generativelanguage.googleapis.com/v1beta/{working_model}:generateContent?key={api_key}"
-        headers = {'Content-Type': 'application/json'}
-        data = {"contents": [{"parts": [{"text": f"You are SamiLab AI. Answer in Algerian Darja naturally. User says: {prompt}"}]}]}
-        
-        response = requests.post(url, headers=headers, json=data).json()
-        
-        # 3. عرض الرد
-        with st.chat_message("assistant"):
-            if "candidates" in response:
-                reply = response["candidates"][0]["content"]["parts"][0]["text"]
-                st.markdown(reply)
-                st.session_state.messages.append({"role": "assistant", "content": reply})
-            else:
-                st.error(f"خطأ في الرد من الموديل ({working_model}): {response}")
+    # استقبال مدخلات المستخدم
+    if prompt := str.chat_input("اكتب رسالتك هنا يا سامي..."):
+        with str.chat_message("user"):
+            str.markdown(prompt)
+        str.session_state.messages.append({"role": "user", "content": prompt})
+
+        # إرسال الطلب إلى Groq
+        try:
+            with str.chat_message("assistant"):
+                response_placeholder = str.empty()
+                full_response = ""
                 
-    except Exception as e:
-        st.error(f"حدث خطأ في الاتصال: {e}")
+                completion = client.chat.completions.create(
+                    model="llama3-8b-8192",
+                    messages=[{"role": m["role"], "content": m["content"]} for m in str.session_state.messages],
+                    stream=True,
+                )
+                
+                for chunk in completion:
+                    if chunk.choices[0].delta.content:
+                        full_response += chunk.choices[0].delta.content
+                        response_placeholder.markdown(full_response + "▌")
+                
+                response_placeholder.markdown(full_response)
+                
+            str.session_state.messages.append({"role": "assistant", "content": full_response})
+        except Exception as e:
+            str.error(f"خطأ في الرد من الموديل: {e}")
