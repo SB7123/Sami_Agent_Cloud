@@ -37,7 +37,7 @@ else:
                 full_response = ""
                 
                 completion = client.chat.completions.create(
-                    model="llama3-8b-8192",
+                    model="llama-3.1-8b-instant",
                     messages=[{"role": m["role"], "content": m["content"]} for m in str.session_state.messages],
                     stream=True,
                 )
